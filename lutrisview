@@ -34,18 +34,35 @@ class LutrisGame:
         self.name = game["name"]
         self.playtime = game["playtime"] if game["playtime"] is not None else ""
         self.lastplayed = game["lastplayed"] if game["lastplayed"] is not None else ""
+        self.coverpath = None
+
+    def find_cover(self):
+        """Set internal coverart image path"""
+        coverart_paths = [
+            "~/.cache/lutris/coverart/",
+            "~/.local/share/lutris/coverart/",
+        ]
+        for p in coverart_paths:
+            full_path = os.path.expanduser(p)
+            if os.path.exists(full_path):
+                for f in os.listdir(full_path):
+                    if f.startswith(self.slug):
+                        self.coverpath = os.path.realpath(os.path.join(full_path, f))
+                        return
+        raise FileNotFoundError(f"Cannot find cover of {self.slug}")
 
     def coverart_path(self):
-        """Return coverart image"""
-        # TODO robustify, take into account env vars, different file ext
-        return os.path.expanduser(f"~/.cache/lutris/coverart/{self.slug}.jpg")
+        """Return coverart image path"""
+        if self.coverpath is None:
+            self.find_cover()
+        return self.coverpath
 
     def launch(self):
         """Launch game in a blocking way"""
         run_game_command = ["lutris", f"lutris:rungameid/{self.id}"]
         result = subprocess.run(run_game_command, capture_output=True)
         if result.returncode != 0:
-            logging.warn(
+            logging.warning(
                 f"Command '{' '.join(run_game_command)}' failed with return code {result.returncode}"
             )
 
@@ -258,27 +275,37 @@ class LutrisView:
         current_angle = int(
             360 * self.splash_counter_angle / self.splash_counter_angle_max
         )
-        x2, y2 = self.load_square_half_size + int(
-            2.0
-            * self.load_square_half_size
-            * math.cos(2.0 * math.pi * current_angle / 360.0)
-        ), self.load_square_half_size + int(
-            2.0
-            * self.load_square_half_size
-            * math.sin(2.0 * math.pi * current_angle / 360.0)
+        x2, y2 = (
+            self.load_square_half_size
+            + int(
+                2.0
+                * self.load_square_half_size
+                * math.cos(2.0 * math.pi * current_angle / 360.0)
+            ),
+            self.load_square_half_size
+            + int(
+                2.0
+                * self.load_square_half_size
+                * math.sin(2.0 * math.pi * current_angle / 360.0)
+            ),
         )
-        x3, y3 = self.load_square_half_size + int(
-            2.0
-            * self.load_square_half_size
-            * math.cos(
-                2.0 * math.pi * (current_angle + self.splash_rotating_angle) / 360.0
-            )
-        ), self.load_square_half_size + int(
-            2.0
-            * self.load_square_half_size
-            * math.sin(
-                2.0 * math.pi * (current_angle + self.splash_rotating_angle) / 360.0
-            )
+        x3, y3 = (
+            self.load_square_half_size
+            + int(
+                2.0
+                * self.load_square_half_size
+                * math.cos(
+                    2.0 * math.pi * (current_angle + self.splash_rotating_angle) / 360.0
+                )
+            ),
+            self.load_square_half_size
+            + int(
+                2.0
+                * self.load_square_half_size
+                * math.sin(
+                    2.0 * math.pi * (current_angle + self.splash_rotating_angle) / 360.0
+                )
+            ),
         )
         self.load_square.fill(self.background_color)
         gfxdraw.aacircle(
