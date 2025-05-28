@@ -81,7 +81,7 @@ Lutrisview uses lutris cli interface to fetch game list and launch them.
 
 Use an editor that is `.editorconfig` aware.
 
-Run `black` on python file before commit.
+Run `ruff format` on python file before commit.
 
 ### Help needed
 
