@@ -407,12 +407,16 @@ class LutrisView:
             return
         if self.game_database is not None:
             if self.pane_in_focus == Pane.NAME:
-                game = self.game_database.games_by_name[self.selected_by_name]
+                game = self.game_database.games_by_name[
+                        self.selected_by_name % len(self.game_database.games_by_name)
+                        ]
             elif self.pane_in_focus == Pane.PLAYTIME:
-                game = self.game_database.games_by_playtime[self.selected_by_playtime]
+                game = self.game_database.games_by_playtime[
+                        self.selected_by_playtime % len(self.game_database.games_by_playtime)
+                        ]
             else:
                 game = self.game_database.games_by_lastplayed[
-                    self.selected_by_lastplayed
+                    self.selected_by_lastplayed % len(self.game_database.games_by_lastplayed)
                 ]
             game.launch()
             self.reload_game_database = True
